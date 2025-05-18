@@ -6,6 +6,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -17,6 +18,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
 
 
 @Service
@@ -102,6 +104,40 @@ public class DataServiceImpl implements DataService {
         } catch (Exception e) {
             throw new RuntimeException("Failed to generate CSV", e);
         }
+    }
+
+    @Override
+    public FileSystemResource generateCsvFile() {
+        List<EntityDto> posts = dataFeign.getData();
+        try {
+            File tempFile = File.createTempFile("data", ".csv");
+            try(CSVWriter csvWriter = new CSVWriter(new FileWriter(tempFile))) {
+                csvWriter.writeNext(new String[] {"Id", "Title", "Body"});
+                for(EntityDto post: posts) {
+                    csvWriter.writeNext(new String[] {
+                            String.valueOf(post.getId()),
+                            sanitize(post.getTitle()),
+                            sanitize(post.getBody())
+                    });
+                }
+                csvWriter.flush();
+
+            }
+            tempFile.deleteOnExit();
+            return  new FileSystemResource(tempFile);
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    private String sanitize(String value) {
+        if(value == null) return "";
+        if(value.startsWith("=") || value.startsWith("+") || value.startsWith("-") || value.startsWith("@")) {
+            return "'" + value;
+        }
+        return value;
     }
 
 }

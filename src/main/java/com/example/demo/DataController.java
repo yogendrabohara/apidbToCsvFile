@@ -36,6 +36,16 @@ public class DataController {
                 .body(resource);
     }
 
+    //better approach
+    @GetMapping("/csvfile")
+    public ResponseEntity<FileSystemResource> downloadCsv() {
+        FileSystemResource resource = dataService.generateCsvFile();
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=posts.csv")
+                .contentType(MediaType.parseMediaType("text/csv"))
+                .body(resource);
+    }
+
 
 
     @PostMapping("/upload")

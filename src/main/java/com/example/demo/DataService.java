@@ -1,5 +1,6 @@
 package com.example.demo;
 
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -14,4 +15,6 @@ public interface DataService {
 
 
     InputStreamResource generateCsvFromData();
+
+    FileSystemResource generateCsvFile();
 }
